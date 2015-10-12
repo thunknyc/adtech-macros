@@ -29,20 +29,20 @@ Assuming `(macros/render template coll default)` is evaluated against a `coll`
 the following macros expand thusly:
 
 | Macro | Expansion |
-|-|-|
-|`${FOO}`|`:BAR`|
-|`${MUMBLE.0}`|`:a`|
-|`${BLARG.FROB}`|`BLOINK`|
+| --| -- |
+| `${FOO}` | `:BAR` |
+| `${MUMBLE.0}` | `:a` |
+| `${BLARG.FROB}` | `BLOINK` |
 
 The following macros showing undefined behavior all evaluate to the
 (optionally-provided) default value:
 
 | Invalid macro |
-|-|
-|`${MISSING}`|
-|`${MUMBLE}`|
-|`${MUMBLE.10}`|
-|`${BLARG.ABULATE}`|
+| -- |
+| `${MISSING}` |
+| `${MUMBLE}` |
+| `${MUMBLE.10}` |
+| `${BLARG.ABULATE}` |
 
 ## License
 
