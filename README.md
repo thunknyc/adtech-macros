@@ -23,7 +23,7 @@ Assuming `(macros/render template coll default)` is evaluated against a `coll`
 {:FOO :BAR
  "FOO" :MEH
  :MUMBLE [:a :b :c :d :e :f :g :h :i :j]
- :BLARG {:FROB "BLOINK"}}
+ "BLARG" {:FROB "BLOINK"}}
 ```
 
 the following macros expand thusly:
