@@ -1,7 +1,7 @@
 # adtech-macros
 
 A Clojure library designed to do adtech-style (aka UNIX-style aka
-DOS-style) macros aka string interpolation.
+DOS-style) macro expansion aka string interpolation.
 
 ## Usage
 
