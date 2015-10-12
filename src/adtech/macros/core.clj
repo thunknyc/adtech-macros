@@ -17,7 +17,8 @@
        (if (and coll (seq els))
          (let [el (first els)]
            (cond (sequential? coll)
-                 (let [idx (Integer/parseInt el)]
+                 (let [idx (try (Integer/parseInt el)
+                                (catch NumberFormatException e default))]
                    (if (contains? coll idx)
                      (recur (get coll (Integer/parseInt el)) (rest els))
                      default))
