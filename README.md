@@ -42,7 +42,16 @@ The following macros showing undefined behavior all evaluate to the
 | `${MISSING}` |
 | `${MUMBLE}` |
 | `${MUMBLE.10}` |
+| `${MUMBLE.POW}` |
 | `${BLARG.ABULATE}` |
+
+### Aracana
+
+For maps, all path components of a macro are first tried as keywords,
+then as strings. For vectors and lists, all path components are
+converted to integers. Note that given the above rules, integer map
+keys are inaccessible as are string keys shadowed by a keyword with
+the same name.
 
 ## License
 
