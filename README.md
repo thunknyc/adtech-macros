@@ -45,6 +45,25 @@ The following macros showing undefined behavior all evaluate to the
 | `${MUMBLE.POW}` |
 | `${BLARG.ABULATE}` |
 
+### Indirection!
+
+Given the collection `coll`
+
+```clojure
+{:double-indirect "indirect",
+ :indirect "mumble",
+ :foo [42],
+ :bar {:mumble "tree"}}
+ ```
+
+rendering the template `"${foo.0}-${bar.(indirect)}"` results in the
+production of `"42-tree"`.
+
+Indirection can be nested aribitrarily, so, for example,
+`"${foo.0}-${bar.(indirect)}"` also produces `"42-tree"`. Full path
+expressions can be used as indirect keys; they are not limited to
+single components.
+
 ### Aracana
 
 For maps, all path components of a macro are first tried as keywords,
