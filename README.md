@@ -60,9 +60,9 @@ rendering the template `"${foo.0}-${bar.(indirect)}"` results in the
 production of `"42-tree"`.
 
 Indirection can be nested aribitrarily, so, for example,
-`"${foo.0}-${bar.(indirect)}"` also produces `"42-tree"`. Full path
-expressions can be used as indirect keys; they are not limited to
-single components.
+`"${foo.0}-${bar.((double-indirect))}"` also produces
+`"42-tree"`. Full path expressions can be used as indirect keys; they
+are not limited to single components.
 
 ### Aracana
 
