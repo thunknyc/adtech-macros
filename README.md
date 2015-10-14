@@ -7,7 +7,7 @@ DOS-style) macro expansion aka string interpolation.
 
 In your `project.clj`'s dependencies:
 
-![Clojars Project](http://clojars.org/thunknyc/adtech-macros/dump/latest-version.svg)
+![Clojars Project](http://clojars.org/thunknyc/adtech-macros/latest-version.svg)]
 
 In your code:
 
