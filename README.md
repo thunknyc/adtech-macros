@@ -45,6 +45,13 @@ The following macros showing undefined behavior all evaluate to the
 | `${MUMBLE.POW}` |
 | `${BLARG.ABULATE}` |
 
+### URL-encoding
+
+All replaced strings are URL-encoded by default. You can change this
+by adjusting the `*filters*` var. This isn't documented anywhere but
+in the example provided in the "poorly-documented, late-breaking
+features" section below.
+
 ### Indirection!
 
 Given the collection `coll`
@@ -63,6 +70,30 @@ Indirection can be nested aribitrarily, so, for example,
 `"${foo.0}-${bar.((double-indirect))}"` also produces
 `"42-tree"`. Full path expressions can be used as indirect keys; they
 are not limited to single components.
+
+### Poorly-documented, late-breaking features
+
+```clojure
+(defn html-encode [s]
+  (string/replace
+   s #"[<>&]"
+   (fn [[s]]
+     (case s
+       \< "%lt;"
+       \> "&gt;"
+       \& "&amp;"))))
+
+(binding [*filters*
+          nil
+          *registered-filters*
+          (assoc *registered-filters* :html html-encode)]
+  (render "${prelude}${|capitalize food} ${|lower,html serving-suggestion.(|upper food)}${postlude}"
+          {:food "hotdog"
+           :serving-suggestion {:HOTDOG "<<ON A BUN!>>"}
+           :prelude "<p>"
+           :postlude "</p>"}))
+;; => "<p>Hotdog %lt;%lt;on a bun!&gt;&gt;</p>"
+```
 
 ### Aracana
 

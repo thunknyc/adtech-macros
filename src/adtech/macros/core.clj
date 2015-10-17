@@ -9,29 +9,60 @@
 
 (def path-parser
   (parser
-   "S = { E <'.'> } E
-   <K> = #'[-_:0-9a-zA-Z]+'
+   "S = FS? { E <'.'> } E
+   FS = <'|'> { K <','> } K <#'\\s+'>
+   <K> = #'[-_:0-9a-zA-Z/*?]+'
    <E> = K | <'('> S <')'>"))
+
+(defn- tree-has-filters?
+  [t]
+  (= :FS (first (get t 1))))
+
+(defn- tree-filters
+  [t]
+  (->> (get t 1)
+       (rest)
+       (map keyword)))
+
+(defn- tree?
+  [t]
+  (and (vector? t) (= :S (first t))))
 
 (defn- clean-tree
   [t]
-  (let [elems (rest t)]
-    (for [el elems]
-      (if (vector? el) (clean-tree el) el))))
+  (cond (not (tree? t))
+        t
+        (tree-has-filters? t)
+        (with-meta (map clean-tree (nthrest t 2)) {:filters (tree-filters t)})
+        :else
+        (rest t)))
 
-(defn- path-tree
+(defn- parse-path
   [path]
   (let [tree (path-parser path)]
     (clean-tree tree)))
 
-(declare ^:private get-path)
+(declare ^:private resolve-path)
 
 (defn- resolve-path-elem
   [coll elem]
-  (if (sequential? elem) (get-path coll elem) elem))
+  (if (sequential? elem) (resolve-path coll elem nil) elem))
 
-(defn- get-path
-  ([coll tree] (get-path coll tree nil))
+(def ^:dynamic *registered-filters*
+  {:upper string/upper-case
+   :lower string/lower-case
+   :capitalize string/capitalize})
+
+(def ^:dynamic *filters* [#(java.net.URLEncoder/encode %)])
+
+(defn- apply-filters
+  [tree v]
+  (let [tree-filters (:filters (meta tree))
+        filters (->> (concat tree-filters *filters*)
+                     (map #(or (*registered-filters* %) %)))]
+    (reduce #(%2 %1) v filters)))
+
+(defn- resolve-path
   ([coll tree default]
    (loop [sub-coll coll els tree]
      (if (and sub-coll (seq els))
@@ -56,10 +87,31 @@
                default))
        (if (or (sequential? sub-coll) (map? sub-coll))
          default
-         sub-coll)))))
+         (apply-filters tree (str sub-coll)))))))
 
 (defn render
   ([s coll] (render s coll ""))
   ([s coll default]
    (string/replace s #"\$\{\s*([^}]+?)\s*\}"
-                   (fn [[_ k]] (str (get-path coll (path-tree k) default))))))
+                   (fn [[_ k]] (let [tree (parse-path k)]
+                                 (resolve-path coll tree default))))))
+
+
+(defn html-encode [s]
+  (string/replace
+   s #"[<>&]"
+   (fn [[s]]
+     (case s
+       \< "%lt;"
+       \> "&gt;"
+       \& "&amp;"))))
+
+(binding [*filters*
+          nil
+          *registered-filters*
+          (assoc *registered-filters* :html html-encode)]
+  (render "${prelude}${|capitalize food} ${|lower,html serving-suggestion.(|upper food)}${postlude}"
+          {:food "hotdog"
+           :serving-suggestion {:HOTDOG "<<ON A BUN!>>"}
+           :prelude "<p>"
+           :postlude "</p>"}))
