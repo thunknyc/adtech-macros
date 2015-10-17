@@ -96,22 +96,3 @@
                    (fn [[_ k]] (let [tree (parse-path k)]
                                  (resolve-path coll tree default))))))
 
-
-(defn html-encode [s]
-  (string/replace
-   s #"[<>&]"
-   (fn [[s]]
-     (case s
-       \< "%lt;"
-       \> "&gt;"
-       \& "&amp;"))))
-
-(binding [*filters*
-          nil
-          *registered-filters*
-          (assoc *registered-filters* :html html-encode)]
-  (render "${prelude}${|capitalize food} ${|lower,html serving-suggestion.(|upper food)}${postlude}"
-          {:food "hotdog"
-           :serving-suggestion {:HOTDOG "<<ON A BUN!>>"}
-           :prelude "<p>"
-           :postlude "</p>"}))
