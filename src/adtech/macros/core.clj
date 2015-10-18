@@ -60,18 +60,24 @@
 (declare ^:private resolve-path)
 
 (defn- resolve-path-elem
-  [coll elem]
+  [coll elem default]
   (if (sequential? elem)
-    (binding [*filters* []] (resolve-path coll elem nil))
+    (let [subpath (binding [*filters* nil] (resolve-path coll elem nil))]
+      (ref (resolve-path coll (parse-path subpath) default)))
     elem))
+
+(defn ref? [x]
+  (instance? clojure.lang.IDeref x))
 
 (defn- resolve-path
   ([coll tree default]
    (loop [sub-coll coll els tree]
      (if (and sub-coll (seq els))
-       (let [el (resolve-path-elem coll (first els))]
+       (let [el (resolve-path-elem coll (first els) default)]
          (cond (nil? el)
                default
+               (ref? el)
+               (recur @el (rest els))
                (sequential? sub-coll)
                (let [idx (try (Integer/parseInt el)
                               (catch NumberFormatException e default))]
