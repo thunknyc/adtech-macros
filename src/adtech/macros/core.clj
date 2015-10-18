@@ -56,10 +56,12 @@
   (if (sequential? elem)
     (binding [*filters* []]
       (let [parsed (->> (resolve-path coll elem nil)
-                        parse-path)]
-        (if (= 1 (count parsed))
-          (resolve-path-elem coll (first parsed))
-          (resolve-path-elem coll parsed))))
+                        parse-path
+                        (apply-filters coll))]
+        (cond (= 1 (count parsed))
+              (resolve-path-elem coll (first parsed))
+              :else
+              (resolve-path-elem coll parsed))))
     elem))
 
 (defn- apply-filters
