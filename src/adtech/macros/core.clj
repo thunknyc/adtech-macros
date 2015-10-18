@@ -3,6 +3,13 @@
             [clojure.zip :as zip]
             [instaparse.core :refer [parser]]))
 
+(def ^:dynamic *registered-filters*
+  {:upper string/upper-case
+   :lower string/lower-case
+   :capitalize string/capitalize})
+
+(def ^:dynamic *filters* [#(java.net.URLEncoder/encode %)])
+
 (defn- string->path
   [path coll]
   [(keyword path)])
@@ -54,13 +61,6 @@
           (resolve-path-elem coll (first parsed))
           (resolve-path-elem coll parsed))))
     elem))
-
-(def ^:dynamic *registered-filters*
-  {:upper string/upper-case
-   :lower string/lower-case
-   :capitalize string/capitalize})
-
-(def ^:dynamic *filters* [#(java.net.URLEncoder/encode %)])
 
 (defn- apply-filters
   [tree v]
