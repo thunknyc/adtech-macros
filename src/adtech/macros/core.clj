@@ -53,8 +53,9 @@
 
 (defn- parse-path
   [path]
-  (let [tree (path-parser path)]
-    (clean-tree tree)))
+  (when path
+    (let [tree (path-parser path)]
+      (clean-tree tree))))
 
 (declare ^:private resolve-path)
 
