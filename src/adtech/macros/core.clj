@@ -35,7 +35,7 @@
         (tree-has-filters? t)
         (with-meta (map clean-tree (nthrest t 2)) {:filters (tree-filters t)})
         :else
-        (rest t)))
+        (map clean-tree (rest t))))
 
 (defn- parse-path
   [path]
