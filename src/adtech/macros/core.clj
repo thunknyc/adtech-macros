@@ -10,6 +10,13 @@
 
 (def ^:dynamic *filters* [#(java.net.URLEncoder/encode %)])
 
+(defn- apply-filters
+  [tree v]
+  (let [tree-filters (:filters (meta tree))
+        filters (->> (concat tree-filters *filters*)
+                     (map #(or (*registered-filters* %) %)))]
+    (reduce #(%2 %1) v filters)))
+
 (defn- string->path
   [path coll]
   [(keyword path)])
@@ -63,13 +70,6 @@
               :else
               (resolve-path-elem coll parsed))))
     elem))
-
-(defn- apply-filters
-  [tree v]
-  (let [tree-filters (:filters (meta tree))
-        filters (->> (concat tree-filters *filters*)
-                     (map #(or (*registered-filters* %) %)))]
-    (reduce #(%2 %1) v filters)))
 
 (defn- resolve-path
   ([coll tree default]
