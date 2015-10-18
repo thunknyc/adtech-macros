@@ -46,7 +46,14 @@
 
 (defn- resolve-path-elem
   [coll elem]
-  (if (sequential? elem) (resolve-path coll elem nil) elem))
+  (if (sequential? elem)
+    (binding [*filters* []]
+      (let [parsed (->> (resolve-path coll elem nil)
+                        parse-path)]
+        (if (= 1 (count parsed))
+          (resolve-path-elem coll (first parsed))
+          (resolve-path-elem coll parsed))))
+    elem))
 
 (def ^:dynamic *registered-filters*
   {:upper string/upper-case
