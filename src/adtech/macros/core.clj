@@ -93,6 +93,5 @@
   ([s coll] (render s coll ""))
   ([s coll default]
    (string/replace s #"\$\{\s*([^}]+?)\s*\}"
-                   (fn [[_ k]] (let [tree (parse-path k)]
-                                 (resolve-path coll tree default))))))
+                   (fn [[_ k]] (resolve-path coll (parse-path k) default)))))
 
