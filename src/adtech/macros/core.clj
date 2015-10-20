@@ -66,8 +66,14 @@
       (ref (resolve-path coll (parse-path subpath) default)))
     elem))
 
-(defn ref? [x]
+(defn- ref? [x]
   (instance? clojure.lang.IDeref x))
+
+(defn- normalize-value [v]
+  (cond (or (keyword? v) (symbol? v))
+        (name v)
+        :else
+        v))
 
 (defn- resolve-path
   ([coll tree default]
@@ -96,7 +102,7 @@
                default))
        (if (or (sequential? sub-coll) (map? sub-coll))
          default
-         (apply-filters tree (str sub-coll)))))))
+         (apply-filters tree (str (normalize-value sub-coll))))))))
 
 (defn render
   ([s coll] (render s coll ""))
