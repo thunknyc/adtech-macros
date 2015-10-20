@@ -62,8 +62,7 @@
 (defn- resolve-path-elem
   [coll elem default]
   (if (sequential? elem)
-    (let [subpath (binding [*filters* nil] (resolve-path coll elem nil))]
-      (ref (resolve-path coll (parse-path subpath) default)))
+    (binding [*filters* nil] (resolve-path coll elem nil))
     elem))
 
 (defn- ref? [x]
@@ -82,8 +81,6 @@
        (let [el (resolve-path-elem coll (first els) default)]
          (cond (nil? el)
                default
-               (ref? el)
-               (recur sub-coll (cons @el (rest els)))
                (sequential? sub-coll)
                (let [idx (try (Integer/parseInt el)
                               (catch NumberFormatException e default))]
@@ -109,4 +106,3 @@
   ([s coll default]
    (string/replace s #"\$\{\s*([^}]+?)\s*\}"
                    (fn [[_ k]] (resolve-path coll (parse-path k) default)))))
-
