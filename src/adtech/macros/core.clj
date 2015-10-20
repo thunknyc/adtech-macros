@@ -83,7 +83,7 @@
          (cond (nil? el)
                default
                (ref? el)
-               (recur @el (rest els))
+               (recur sub-coll (cons @el (rest els)))
                (sequential? sub-coll)
                (let [idx (try (Integer/parseInt el)
                               (catch NumberFormatException e default))]
