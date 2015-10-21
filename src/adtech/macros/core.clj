@@ -38,11 +38,6 @@
   [t]
   (= :BU (first (last t))))
 
-(defn- extract-backup [t]
-  (if (tree-has-backup? t)
-    [(with-meta (butlast t) (meta t)) (clean-tree (nth (last t) 1))]
-    [t nil]))
-
 (defn- tree-filters
   [t]
   (->> (get t 1)
@@ -61,6 +56,11 @@
         (with-meta (map clean-tree (nthrest t 2)) {:filters (tree-filters t)})
         :else
         (map clean-tree (rest t))))
+
+(defn- extract-backup [t]
+  (if (tree-has-backup? t)
+    [(with-meta (butlast t) (meta t)) (clean-tree (nth (last t) 1))]
+    [t nil]))
 
 (defn- parse-path
   [path]
