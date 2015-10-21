@@ -23,14 +23,25 @@
 
 (def path-parser
   (parser
-   "S = FS? { E <'.'> } E
-   FS = <'|'> { K <','> } K <#'\\s+'>
+   "S = FS? { E <'.'> } E BU?
+   WS = <#'\\s+'>
+   BU = <WS> S
+   FS = <'|'> { K <','> } K <WS>
    <K> = #'[-_:0-9a-zA-Z/*?<>]+'
    <E> = K | <'('> S <')'>"))
 
 (defn- tree-has-filters?
   [t]
-  (= :FS (first (get t 1))))
+  (= :FS (first (nth t 1))))
+
+(defn- tree-has-backup?
+  [t]
+  (= :BU (first (last t))))
+
+(defn- extract-backup [t]
+  (if (tree-has-backup? t)
+    [(with-meta (butlast t) (meta t)) (clean-tree (nth (last t) 1))]
+    [t nil]))
 
 (defn- tree-filters
   [t]
@@ -72,34 +83,43 @@
   (cond (or (keyword? v) (symbol? v))
         (name v)
         :else
-        v))
+        (str v)))
+
+(defn- return-missing
+  [coll tree backup default]
+  (if backup
+    (apply-filters
+     tree
+     (normalize-value (resolve-path coll backup default)))
+    default))
 
 (defn- resolve-path
   ([coll tree default]
-   (loop [sub-coll coll els tree]
-     (if (and sub-coll (seq els))
-       (let [el (resolve-path-elem coll (first els) default)]
-         (cond (nil? el)
-               default
-               (sequential? sub-coll)
-               (let [idx (try (Integer/parseInt el)
-                              (catch NumberFormatException e default))]
-                 (if (contains? sub-coll idx)
-                   (recur (get sub-coll (Integer/parseInt el)) (rest els))
-                   default))
-               (map? sub-coll)
-               (let [el-kw (keyword el)]
-                 (cond (contains? sub-coll el-kw)
-                       (recur (get sub-coll el-kw) (rest els))
-                       (contains? sub-coll el)
-                       (recur (get sub-coll el) (rest els))
-                       :else
-                       default))
-               :else
-               default))
-       (if (or (sequential? sub-coll) (map? sub-coll))
-         default
-         (apply-filters tree (str (normalize-value sub-coll))))))))
+   (let [[tree bu] (extract-backup tree)]
+     (loop [sub-coll coll els tree]
+       (if (and sub-coll (seq els))
+         (let [el (resolve-path-elem coll (first els) default)]
+           (cond (nil? el)
+                 (return-missing coll tree bu default)
+                 (sequential? sub-coll)
+                 (let [idx (try (Integer/parseInt el)
+                                (catch NumberFormatException e (return-missing coll tree bu default)))]
+                   (if (contains? sub-coll idx)
+                     (recur (get sub-coll (Integer/parseInt el)) (rest els))
+                     (return-missing coll tree bu default)))
+                 (map? sub-coll)
+                 (let [el-kw (keyword el)]
+                   (cond (contains? sub-coll el-kw)
+                         (recur (get sub-coll el-kw) (rest els))
+                         (contains? sub-coll el)
+                         (recur (get sub-coll el) (rest els))
+                         :else
+                         (return-missing coll tree bu default)))
+                 :else
+                 (return-missing coll tree bu default)))
+         (if (or (sequential? sub-coll) (map? sub-coll))
+           (return-missing coll tree bu default)
+           (apply-filters tree (normalize-value sub-coll))))))))
 
 (defn render
   ([s coll] (render s coll ""))
