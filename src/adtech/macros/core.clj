@@ -62,10 +62,10 @@
   [v]
   (cond (string? v)
         v
-        (or (instance? java.lang.Boolean v) (number? v))
-        (str v)
         (or (keyword? v) (symbol? v))
         (name v)
+        (not (or (map? v) (sequential? v)))
+        (str s)
         :else
         nil))
 
