@@ -65,7 +65,7 @@
         (or (keyword? v) (symbol? v))
         (name v)
         (not (or (map? v) (sequential? v)))
-        (str s)
+        (str v)
         :else
         nil))
 
