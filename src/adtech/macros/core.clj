@@ -81,7 +81,7 @@
   (if-let [v (cleanse value)]
     (filter-value filters v)
     (if backup
-      (replace-macro backup coll missing)
+      (replace-macro (assoc backup :filters filters) coll missing)
       (filter-value filters missing))))
 
 (defn- replace-macro
