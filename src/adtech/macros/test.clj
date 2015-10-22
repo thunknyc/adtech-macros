@@ -59,6 +59,7 @@
   (is (= "BAR"
          (macros/render "${|upper present.missing (present).1}"
                         {:present "foo" :foo [42 :bar]})))
-  (is (= "BAR"
-         (macros/render "${|upper present.missing (|upper present).1}"
-                        {:present "FOO" :FOO [42 :bar]}))))
+  (is (= "Bar"
+         (macros/render
+          "${|upper,capitalize present.missing (|upper present).1}"
+          {:present "FOO" :FOO [42 :bar]}))))
