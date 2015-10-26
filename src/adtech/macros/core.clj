@@ -60,7 +60,9 @@
 
 (defn- cleanse
   [v]
-  (cond (string? v)
+  (cond (nil? v)
+        nil
+        (string? v)
         v
         (or (keyword? v) (symbol? v))
         (name v)
@@ -77,20 +79,20 @@
                (map #(or (*registered-filters* %) %)))))
 
 (defn- finish-value
-  [filters coll value missing backup]
+  [filters coll value missing backup nested?]
   (if-let [v (cleanse value)]
     (filter-value filters v)
     (if backup
-      (replace-macro (assoc backup :filters filters) coll missing)
+      (replace-macro (assoc backup :filters filters) coll missing nested?)
       (filter-value filters missing))))
 
 (defn- replace-macro
-  [{:keys [filters backup path] :as tree} coll missing]
+  [{:keys [filters backup path] :as tree} coll missing nested?]
   (loop [path path subcoll coll]
     (if (seq path)
       (let [raw-el (first path)
             el (if (map? raw-el)
-                 (binding [*filters* nil] (replace-macro raw-el coll nil))
+                 (binding [*filters* nil] (replace-macro raw-el coll nil true))
                  raw-el)
             val (cond (nil? el)
                       nil
@@ -107,8 +109,8 @@
                       nil)]
         (if val
           (recur (rest path) val)
-          (finish-value filters coll val missing backup)))
-      (finish-value filters coll subcoll missing backup))))
+          (finish-value filters coll val missing backup nested?)))
+      (finish-value filters coll subcoll missing backup nested?))))
 
 (defn render
   ([s coll] (render s coll ""))
@@ -119,4 +121,4 @@
     (fn [[_ macro]]
       (-> (path-parser macro)
           make-macro-spec
-          (replace-macro coll missing))))))
+          (replace-macro coll missing false))))))
