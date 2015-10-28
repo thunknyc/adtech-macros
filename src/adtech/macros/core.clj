@@ -3,11 +3,12 @@
             [instaparse.core :refer [parser]]))
 
 (def ^:dynamic *registered-filters*
-  {:upper string/upper-case
+  {:url #(java.net.URLEncoder/encode %)
+   :upper string/upper-case
    :lower string/lower-case
    :capitalize string/capitalize})
 
-(def ^:dynamic *filters* [#(java.net.URLEncoder/encode %)])
+(def ^:dynamic *filters* [:url])
 
 (def path-parser
   (parser
@@ -112,13 +113,31 @@
           (finish-value filters coll val missing backup nested?)))
       (finish-value filters coll subcoll missing backup nested?))))
 
+(def ^:dynamic *registered-styles*
+  {:shell
+   {:pat #"\$\{\s*([^{}]+?)\s*\}" :val second}
+   :mustache
+   {:pat #"\{\{\s*([^{}]+?)\s*\}\}" :val second}
+   :comb
+   {:pat #"<%=\s*([^%]+?)\s*%>" :val second}})
+
+(def ^:dynamic *style* :shell)
+
 (defn render
   ([s coll] (render s coll ""))
   ([s coll missing]
-   (string/replace
-    s
-    #"\$\{\s*([^}]+?)\s*\}"
-    (fn [[_ macro]]
-      (-> (path-parser macro)
-          make-macro-spec
-          (replace-macro coll missing false))))))
+   (let [{extract-val :val pattern :pat}
+         (get *registered-styles* *style*)]
+     (string/replace
+            s
+            pattern
+            (fn [match]
+              (-> (path-parser (extract-val match))
+                  make-macro-spec
+                  (replace-macro coll missing false)))))))
+
+(defn render* [s coll {:keys [missing style filters]
+                       :or {missing "" style *style* filters *filters*}}]
+  (binding [*style* style
+            *filters* filters]
+    (render s coll missing)))

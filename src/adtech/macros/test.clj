@@ -45,6 +45,34 @@
   (is (= "%3Cfoo%3E"
          (macros/render "${(bar.(foo))}" {:foo 0 :bar [42] :42 "<foo>"}))))
 
+(deftest mustache
+  (is (= "${FOO} 42 ${BAR}"
+         (binding [macros/*style* :mustache]
+           (macros/render "${FOO} {{(foo).0}} ${BAR}" {:foo :bar :bar [42]}))))
+  (is (= "${42}"
+         (binding [macros/*style* :mustache]
+           (macros/render "${{{(foo).0}}}" {:foo :bar :bar [42]})))))
+
+(deftest comb
+  (is (= "${FOO} 42 ${BAR}"
+         (binding [macros/*style* :comb]
+           (macros/render "${FOO} <%= (foo).0 %> ${BAR}"
+                          {:foo :bar :bar [42]}))))
+  (is (= "${42}"
+         (binding [macros/*style* :comb]
+           (macros/render "${<%=(foo).0%>}" {:foo :bar :bar [42]})))))
+
+(deftest render*
+  (is (= "${42}"
+         (macros/render* "${<%=(foo).0%>}"
+                         {:foo :bar :bar [42]}
+                         {:style :comb})))
+  (is (= "<%3C42%3E>"
+         (macros/render* "<<%=(foo).0%>>"
+                         {:foo :bar :bar ["<42>"]}
+                         {:style :comb
+                          :filters [:url]}))))
+
 (deftest backups
   (is (= "foo"
          (macros/render "${missing present}" {:present "foo"})))
@@ -63,3 +91,14 @@
          (macros/render
           "${|upper,capitalize present.missing (|upper present).1}"
           {:present "FOO" :FOO [42 :bar]}))))
+
+
+(def ^:private phi (/ (+ 1 (Math/sqrt 5.0)) 2.0))
+
+(defn fib [n]
+  (Math/round (/ (Math/pow phi n) (Math/sqrt 5.0))))
+
+(defn fib2 [n]
+  (cond (zero? n) 0
+        (= n 1) 1
+        :else (+ (fib2 (dec n)) (fib2 (dec (dec n))))))
