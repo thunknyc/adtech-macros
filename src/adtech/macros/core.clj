@@ -119,7 +119,9 @@
    :mustache
    {:pat #"\{\{\s*([^{}]+?)\s*\}\}" :val second}
    :comb
-   {:pat #"<%=\s*([^%]+?)\s*%>" :val second}})
+   {:pat #"<%=\s*([^%]+?)\s*%>" :val second}
+   :dots
+   {:pat #"\.\.\.\s*([^{}]+?)\s*\.\.\." :val second}})
 
 (def ^:dynamic *style* :shell)
 
