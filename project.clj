@@ -1,4 +1,4 @@
-(defproject thunknyc/adtech-macros "0.8.1"
+(defproject thunknyc/adtech-macros "0.8.2"
   :description "A Clojure library designed to do adtech-style (aka UNIX-style aka DOS-style) macro expansion aka string interpolation."
   :url "http://github.com/thunknyc/adtech-macros"
   :license {:name "Eclipse Public License"
